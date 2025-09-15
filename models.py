@@ -3,8 +3,7 @@ import os
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
 from sqlalchemy import String, DateTime, Integer, func, ForeignKey
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
-
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'postgres')
 POSTGRES_USER = os.getenv('POSTGRES_USER', 'postgres')
@@ -42,7 +41,7 @@ class Post(Base):
     title: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     owner_id: Mapped['User'] = mapped_column(ForeignKey('users.id'))
-    owner_name: Mapped['User'] = mapped_column(ForeignKey('users.name'))
+    owner_name: Mapped[str] = relationship("User", backref='name')
     registration_time: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
 
     @property
@@ -53,6 +52,6 @@ class Post(Base):
             'description': self.description,
             'owner_id': self.owner_id,
             'owner_name': self.owner_name,
-            'registration_time': int[self.registration_time.timestamp()]
+            'registration_time': int(self.registration_time.timestamp())
         }
 

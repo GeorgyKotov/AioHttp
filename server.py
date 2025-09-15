@@ -17,7 +17,7 @@ app.cleanup_ctx.append(orm_context)
 
 
 def get_http_error(error_class, message):
-    response = json.dump({'error': message})
+    response = json.dumps({'error': message})
     http_error = error_class(text=response, content_type='application/json')
     return http_error
 
@@ -25,7 +25,7 @@ def get_http_error(error_class, message):
 async def get_user_by_id(session, user_id):
     user = await session.get(User, user_id)
     if user is None:
-        error = get_http_error(web.HTTPNot.Found, f'user with id {user_id} is not found')
+        error = get_http_error(web.HTTPNotFound, f'user with id {user_id} is not found')
         raise error
     return user
 
@@ -44,7 +44,7 @@ async def add_user(session, user):
 async def session_mmiddleware(request, handler):
     async with Session() as session:
         request.session = session
-        response = handler(request)
+        response = await handler(request)
         return response
 
 
@@ -54,7 +54,7 @@ app.middlewares.append(session_mmiddleware)
 async def get_post_by_id(session, post_id):
     post = await session.get(Post, post_id)
     if post is None:
-        error = get_http_error(web.HTTPNot.Found, f'post with id {post_id} is not found')
+        error = get_http_error(web.HTTPNotFound, f'post with id {post_id} is not found')
         raise error
     return post
 
@@ -69,7 +69,7 @@ class UserView(web.View):
 
     @property
     def user_id(self):
-        return int(self.request.match_info('user_id'))
+        return int(self.request.match_info['user_id'])
 
     async def get_user(self):
         user = get_user_by_id(self.request.sesson, self.user_id)
